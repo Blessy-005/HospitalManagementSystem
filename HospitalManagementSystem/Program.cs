@@ -1,119 +1,379 @@
-﻿using HospitalManagementSystem.Services;
+﻿
 using HospitalManagementSystem.Models;
-List<Patient> patient = new List<Patient>();
-PatientServices patientServices = new PatientServices(patient);
-Patient ps1 = new Patient("1", "Blessy", 12, "123456789");
-Patient ps2 = new Patient("2", "Catherine", 20, "123456789");
-patientServices.RegisterPatient(ps1);
-patientServices.RegisterPatient(ps2);
-Console.WriteLine("-----------------------");
-Console.WriteLine("Displayig all patients..");
-foreach (Patient p in patientServices.DisplayPatients())
-{
-    Console.WriteLine($"Patient Id: " + p.PatientId + " |" + $"Patient Name: " + p.FullName + " |" + $"Patient Age: " + p.Age + " |" + $"Patient phone number: " + p.PhoneNumber);
+using HospitalManagementSystem.Services;
 
-}
-Console.WriteLine("-----------------------");
-Console.WriteLine("Search Patient: eg(Arun)");
-foreach (Patient p in patientServices.SearchByName("Blessy"))
+class Program
 {
-    Console.WriteLine("Found!!");
-    Console.WriteLine(p.FullName);
-}
-Console.WriteLine("-----------------------");
-Console.WriteLine("Updating Patient: ");
-bool updatePatient = patientServices.UpdatePatient("2", "Alice", 1, "123456789");
-if (updatePatient)
-{
-    Console.WriteLine("Updated Successfully..");
-}
-Console.WriteLine("-----------------------");
-Console.WriteLine("Displayig all patients..");
-foreach (Patient p in patientServices.DisplayPatients())
-{
-    Console.WriteLine($"Patient Id: " + p.PatientId + " |" + $"Patient Name: " + p.FullName + " |" + $"Patient Age: " + p.Age + " |" + $"Patient phone number: " + p.PhoneNumber);
-
-}
-Console.WriteLine("-----------------------");
-Console.WriteLine("Deleting Patient: ");
-bool deletePatient = patientServices.DeletePatient("2");
-if (deletePatient)
-{
-    Console.WriteLine("Deleted Successfully..");
-}
-Console.WriteLine("-----------------------");
-Console.WriteLine("Displayig all patients..");
-foreach (Patient p in patientServices.DisplayPatients())
-{
-    Console.WriteLine($"Patient Id: " + p.PatientId + " |" + $"Patient Name: " + p.FullName + " |" + $"Patient Age: " + p.Age + " |" + $"Patient phone number: " + p.PhoneNumber);
-
-}
-List<Doctor> doctor = new List<Doctor>();
-DoctorServices doctorServices = new DoctorServices(doctor);
-Doctor ds1 = new Doctor("100", "Blessy","Cardiology",800m);
-Doctor ds2 = new Doctor("101", "Catherine", "Neurology", 1800m);
-doctorServices.AddDoctor(ds1);
-doctorServices.AddDoctor(ds2);
-Console.WriteLine("-----------------------");
-Console.WriteLine("Displayig all Doctors..");
-foreach (Doctor p in doctorServices.DisplayDoctors())
-{
-    Console.WriteLine($"Doctor Id: " + p.DoctorId + " |" + $"Doctor's Name: " + p.FullName + " |" + $"Doctor Specialization: " + p.Specialization + " |" + $"Consultation Fee : " + p.ConsultationFee);
-
-}
-Console.WriteLine("-----------------------");
-Console.WriteLine("Search Doctor: eg(100)");
-foreach (Doctor p in doctorServices.SearchByName("Blessy"))
-{
-    Console.WriteLine("Found!!");
-    Console.WriteLine(p.FullName);
-}
-Console.WriteLine("-----------------------");
-Console.WriteLine("Updating Doctor: ");
-bool updateDoctor = doctorServices.UpdateDoctor("101", "Catherine", "Endocronology", 9190m);
-Console.WriteLine(updateDoctor);
-if (updateDoctor)
-{
-    Console.WriteLine("Updated Successfully..");
-}
-Console.WriteLine("-----------------------");
-Console.WriteLine("Displayig all doctors..");
-foreach (Doctor p in doctorServices.DisplayDoctors())
-{
-    Console.WriteLine($"Doctor Id: " + p.DoctorId + " |" + $"Doctor's Name: " + p.FullName + " |" + $"Doctor Specialization: " + p.Specialization + " |" + $"Consultation Fee : " + p.ConsultationFee);
-
-}
-Console.WriteLine("-----------------------");
-Console.WriteLine("Deleting Patient: ");
-bool deleteDoctor = doctorServices.DeleteDoctor("Blessy");
-if (deleteDoctor)
-{
+    static void Main()
     {
-        Console.WriteLine("Deleted Successfully..");
+        List<Patient> patients = new List<Patient>();
+        List<Doctor> doctors = new List<Doctor>();
+        List<Appointment> appointments = new List<Appointment>();
+
+        PatientServices patientServices = new PatientServices(patients);
+        DoctorServices doctorServices = new DoctorServices(doctors);
+        AppointmentServices appointmentServices =
+            new AppointmentServices(patients, doctors, appointments);
+
+        patientServices.RegisterPatient(
+            new Patient("1", "Blessy", 12, "123456789"));
+
+        patientServices.RegisterPatient(
+            new Patient("2", "Catherine", 20, "987654321"));
+
+        doctorServices.AddDoctor(
+            new Doctor("100", "Blessy", "Cardiology", 800m));
+
+        doctorServices.AddDoctor(
+            new Doctor("101", "Catherine", "Neurology", 1800m));
+
+        bool running = true;
+
+        while (running)
+        {
+            Console.WriteLine("\n===== HOSPITAL MANAGEMENT SYSTEM =====");
+            Console.WriteLine("1. Patient Management");
+            Console.WriteLine("2. Doctor Management");
+            Console.WriteLine("3. Appointment Management");
+            Console.WriteLine("4. Exit");
+            Console.Write("Enter your choice: ");
+
+            if (!int.TryParse(Console.ReadLine(), out int choice))
+            {
+                Console.WriteLine("Please enter a valid number.");
+                continue;
+            }
+
+            switch (choice)
+            {
+                case 1:
+                    PatientMenu(patientServices);
+                    break;
+
+                case 2:
+                    DoctorMenu(doctorServices);
+                    break;
+
+                case 3:
+                    AppointmentMenu(
+                        appointmentServices, patientServices, doctorServices);
+                    break;
+
+                case 4:
+                    running = false;
+                    Console.WriteLine("Thank you for using the system!");
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice. Try again.");
+                    break;
+            }
+        }
     }
-    Console.WriteLine("-----------------------");
-    Console.WriteLine("Displayig all patients..");
-    foreach (Doctor p in doctorServices.DisplayDoctors())
+
+
+    static void PatientMenu(PatientServices service)
     {
-        Console.WriteLine($"Doctor Id: " + p.DoctorId + " |" + $"Doctor's Name: " + p.FullName + " |" + $"Doctor Specialization: " + p.Specialization + " |" + $"Consultation Fee : " + p.ConsultationFee);
+        bool back = false;
 
+        while (!back)
+        {
+            Console.WriteLine("\n===== PATIENT MANAGEMENT =====");
+            Console.WriteLine("1. Register Patient");
+            Console.WriteLine("2. Display Patients");
+            Console.WriteLine("3. Search Patient");
+            Console.WriteLine("4. Update Patient");
+            Console.WriteLine("5. Delete Patient");
+            Console.WriteLine("6. Back to Main Menu");
+            Console.Write("Enter your choice: ");
+
+            if (!int.TryParse(Console.ReadLine(), out int choice))
+            {
+                Console.WriteLine("Please enter a valid number.");
+                continue;
+            }
+
+            switch (choice)
+            {
+                case 1:
+                    Console.Write("Patient ID: ");
+                    string id = Console.ReadLine() ?? "";
+
+                    Console.Write("Full Name: ");
+                    string name = Console.ReadLine() ?? "";
+
+                    Console.Write("Age: ");
+                    if (!int.TryParse(Console.ReadLine(), out int age))
+                    {
+                        Console.WriteLine("Invalid age.");
+                        break;
+                    }
+
+                    Console.Write("Phone Number: ");
+                    string phone = Console.ReadLine() ?? "";
+
+                    service.RegisterPatient(
+                        new Patient(id, name, age, phone));
+
+                    Console.WriteLine("Patient registered.");
+                    break;
+
+                case 2:
+                    foreach (Patient p in service.DisplayPatients())
+                    {
+                        Console.WriteLine(
+                            $"ID: {p.PatientId} | Name: {p.FullName} | " +
+                            $"Age: {p.Age} | Phone: {p.PhoneNumber}");
+                    }
+                    break;
+
+                case 3:
+                    Console.Write("Enter patient name to search: ");
+                    string searchName = Console.ReadLine() ?? "";
+
+                    foreach (Patient p in service.SearchByName(searchName))
+                    {
+                        Console.WriteLine(
+                            $"Found: {p.PatientId} - {p.FullName}");
+                    }
+                    break;
+
+                case 4:
+                    Console.Write("Patient ID to update: ");
+                    string updateId = Console.ReadLine() ?? "";
+
+                    Console.Write("New Name: ");
+                    string newName = Console.ReadLine() ?? "";
+
+                    Console.Write("New Age: ");
+                    if (!int.TryParse(Console.ReadLine(), out int newAge))
+                    {
+                        Console.WriteLine("Invalid age.");
+                        break;
+                    }
+
+                    Console.Write("New Phone: ");
+                    string newPhone = Console.ReadLine() ?? "";
+
+                    bool updated = service.UpdatePatient(
+                        updateId, newName, newAge, newPhone);
+
+                    Console.WriteLine(
+                        updated ? "Patient updated." : "Patient not found.");
+                    break;
+
+                case 5:
+                    Console.Write("Patient ID to delete: ");
+                    string deleteId = Console.ReadLine() ?? "";
+
+                    bool deleted = service.DeletePatient(deleteId);
+
+                    Console.WriteLine(
+                        deleted ? "Patient deleted." : "Patient not found.");
+                    break;
+
+                case 6:
+                    back = true;
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+        }
+    }
+
+
+    static void DoctorMenu(DoctorServices service)
+    {
+        bool back = false;
+
+        while (!back)
+        {
+            Console.WriteLine("\n===== DOCTOR MANAGEMENT =====");
+            Console.WriteLine("1. Add Doctor");
+            Console.WriteLine("2. Display Doctors");
+            Console.WriteLine("3. Search Doctor");
+            Console.WriteLine("4. Update Doctor");
+            Console.WriteLine("5. Delete Doctor");
+            Console.WriteLine("6. Back to Main Menu");
+            Console.Write("Enter your choice: ");
+
+            if (!int.TryParse(Console.ReadLine(), out int choice))
+            {
+                Console.WriteLine("Please enter a valid number.");
+                continue;
+            }
+
+            switch (choice)
+            {
+                case 1:
+                    Console.Write("Doctor ID: ");
+                    string id = Console.ReadLine() ?? "";
+
+                    Console.Write("Full Name: ");
+                    string name = Console.ReadLine() ?? "";
+
+                    Console.Write("Specialization: ");
+                    string specialization = Console.ReadLine() ?? "";
+
+                    Console.Write("Consultation Fee: ");
+                    if (!decimal.TryParse(
+                        Console.ReadLine(), out decimal fee))
+                    {
+                        Console.WriteLine("Invalid fee.");
+                        break;
+                    }
+
+                    service.AddDoctor(
+                        new Doctor(id, name, specialization, fee));
+
+                    Console.WriteLine("Doctor added.");
+                    break;
+
+                case 2:
+                    foreach (Doctor d in service.DisplayDoctors())
+                    {
+                        Console.WriteLine(
+                            $"ID: {d.DoctorId} | Name: {d.FullName} | " +
+                            $"Specialization: {d.Specialization} | " +
+                            $"Fee: {d.ConsultationFee}");
+                    }
+                    break;
+
+                case 3:
+                    Console.Write("Doctor name to search: ");
+                    string searchName = Console.ReadLine() ?? "";
+
+                    foreach (Doctor d in service.SearchByName(searchName))
+                    {
+                        Console.WriteLine(
+                            $"Found: {d.DoctorId} - {d.FullName}");
+                    }
+                    break;
+
+                case 4:
+                    Console.Write("Doctor ID to update: ");
+                    string updateId = Console.ReadLine() ?? "";
+
+                    Console.Write("New Name: ");
+                    string newName = Console.ReadLine() ?? "";
+
+                    Console.Write("New Specialization: ");
+                    string newSpecialization = Console.ReadLine() ?? "";
+
+                    Console.Write("New Consultation Fee: ");
+                    if (!decimal.TryParse(
+                        Console.ReadLine(), out decimal newFee))
+                    {
+                        Console.WriteLine("Invalid fee.");
+                        break;
+                    }
+
+                    bool updated = service.UpdateDoctor(
+                        updateId, newName, newSpecialization, newFee);
+
+                    Console.WriteLine(
+                        updated ? "Doctor updated." : "Doctor not found.");
+                    break;
+
+                case 5:
+                    // This follows your original test, which deletes by name.
+                    Console.Write("Doctor name to delete: ");
+                    string deleteName = Console.ReadLine() ?? "";
+
+                    bool deleted = service.DeleteDoctor(deleteName);
+
+                    Console.WriteLine(
+                        deleted ? "Doctor deleted." : "Doctor not found.");
+                    break;
+
+                case 6:
+                    back = true;
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+        }
+    }
+
+
+    static void AppointmentMenu(
+        AppointmentServices service,
+        PatientServices patientService,
+        DoctorServices doctorService)
+    {
+        bool back = false;
+
+        while (!back)
+        {
+            Console.WriteLine("\n===== APPOINTMENT MANAGEMENT =====");
+            Console.WriteLine("1. Book Appointment");
+            Console.WriteLine("2. Display Appointments");
+            Console.WriteLine("3. Back to Main Menu");
+            Console.Write("Enter your choice: ");
+
+            if (!int.TryParse(Console.ReadLine(), out int choice))
+            {
+                Console.WriteLine("Please enter a valid number.");
+                continue;
+            }
+
+            switch (choice)
+            {
+                case 1:
+                    Console.Write("Appointment ID: ");
+                    string appointmentId = Console.ReadLine() ?? "";
+
+                    Console.Write("Patient ID: ");
+                    string patientId = Console.ReadLine() ?? "";
+
+                    Console.Write("Doctor ID: ");
+                    string doctorId = Console.ReadLine() ?? "";
+
+                    Console.Write("Reason for appointment: ");
+                    string reason = Console.ReadLine() ?? "";
+
+                    Console.Write("Appointment date and time (e.g. 25-10-2026 10:30): ");
+                    if (!DateTime.TryParse(
+                        Console.ReadLine(), out DateTime appointmentDate))
+                    {
+                        Console.WriteLine("Invalid date and time.");
+                        break;
+                    }
+
+                    Appointment appointment = new Appointment(
+                        appointmentId,
+                        patientId,
+                        doctorId,
+                        appointmentDate,
+                        reason,
+                        "Scheduled");
+
+                    service.BookAppointment(appointment);
+                    Console.WriteLine("Appointment booking request processed.");
+                    break;
+
+                case 2:
+                    foreach (Appointment a in service.DisplayAllAppointments())
+                    {
+                        Console.WriteLine(
+                            $"Appointment ID: {a.AppointmentId} | " +
+                            $"Reason: {a.Reason} | " +
+                            $"Date: {a.AppointmentDateTime} | Status: {a.Status}");
+                    }
+                    break;
+
+                case 3:
+                    back = true;
+                    break;
+
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+        }
     }
 }
-List<Appointment> appointments = new List<Appointment>();
-AppointmentServices appointmentServices = new AppointmentServices(patient, doctor, appointments);
-Appointment app1 = new Appointment("1000", "1", "100", DateTime.Now, "Fever", "Scheduled");
-Appointment app2 = new Appointment("1001", "2", "101", DateTime.Now, "Cold", "Scheduled");
-
-appointmentServices.BookAppointment(app1);
-appointmentServices.BookAppointment(app2);
-Console.WriteLine("=======================");
-foreach(Appointment p in appointmentServices.DisplayAllAppointments())
-{
-    Console.WriteLine($"Appointment Id: " + p.AppointmentId + " |" + $"Reason: " + p.Reason + " |" + $"Date time: " + DateTime.Now + " |" + $"Status : " + p.Status);
-
-}
-Console.WriteLine("=======================");
-
-
-
-
